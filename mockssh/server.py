@@ -21,6 +21,9 @@ import paramiko
 
 from mockssh import sftp
 
+from logging import getLogger
+LOGGER = getLogger(__name__)
+
 __all__ = [
     "Server",
 ]
@@ -59,7 +62,8 @@ class Handler(paramiko.ServerInterface):
             with subprocess.Popen(command, shell=True,
                                   stdin=subprocess.PIPE,
                                   stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE) as p:
+                                  stderr=subprocess.PIPE,
+                                  text=True) as p:
                 StreamTransfer(channel, p).run()
                 channel.send_exit_status(p.returncode)
         except Exception:
@@ -134,8 +138,14 @@ class Server(object):
 
     def _run(self):
         sock = self._socket
+        if not sock:
+            raise TypeError("None not expected for socket")
+        LOGGER.debug(f'{sock.fileno()=}')
         selector = selectors.DefaultSelector()
-        selector.register(sock, selectors.EVENT_READ)
+        try:
+            selector.register(sock, selectors.EVENT_READ)
+        except ValueError:
+            LOGGER.debug(f'Socket closed when attempting to register: {sock.fileno()=}')
         while sock.fileno() > 0:
             self.log.debug("Waiting for incoming connections ...")
             events = selector.select(timeout=1.0)

@@ -1,11 +1,13 @@
+from typing import Callable
+
+
 try:
     import selectors
 except ImportError:  # Python 2.7
     import selectors2 as selectors
 
-
 class Stream:
-    def __init__(self, fd, read, write, flush):
+    def __init__(self, fd: int, read: Callable[[], bytes | str], write, flush):
         self.fd = fd
         self.read = read
         self.write = write
@@ -13,7 +15,11 @@ class Stream:
 
     def transfer(self):
         data = self.read()
-        self.write(data)
+        if isinstance(data, bytes):
+            data_to_write = data.decode()
+        else:
+            data_to_write = data
+        self.write(data_to_write)
         self.flush()
         return data
 
