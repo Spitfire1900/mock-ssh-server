@@ -1,6 +1,10 @@
 import random
 import string
+import sys
 
+from pytest import mark
+
+not_windows = mark.skipif(sys.platform == 'win32', reason='Not supported on Windows')
 
 def first_user(server):
     for uid in server.users:
@@ -22,13 +26,16 @@ def streaming_test(server, command, tested_fd, number_of_inputs=1):
             assert channel_output == channel_input
 
 
+@not_windows
 def test_stdin_to_stdout(server):
     return streaming_test(server, "cat", 1)
 
 
+@not_windows
 def test_stdin_to_stderr(server):
     streaming_test(server, "cat 1>&2", 2)
 
 
+@not_windows
 def test_streaming_output(server):
     streaming_test(server, "cat", 1, 100)

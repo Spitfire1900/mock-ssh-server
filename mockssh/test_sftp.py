@@ -1,8 +1,10 @@
 import os
 import stat
+import sys
 
-from pytest import fixture, raises
+from pytest import fixture, mark, raises
 
+not_windows = mark.skipif(sys.platform == 'win32', reason='Not supported on Windows')
 
 def files_equal(fname1, fname2):
     if os.stat(fname1).st_size == os.stat(fname2).st_size:
@@ -23,6 +25,7 @@ def test_get(sftp_client, tmp_dir):
     assert files_equal(target_fname, __file__)
 
 
+@not_windows
 def test_symlink(sftp_client, tmp_dir):
     foo = os.path.join(tmp_dir, "foo")
     bar = os.path.join(tmp_dir, "bar")
@@ -32,6 +35,7 @@ def test_symlink(sftp_client, tmp_dir):
     assert os.path.islink(bar)
 
 
+@not_windows
 def test_lstat(sftp_client, tmp_dir):
     foo = os.path.join(tmp_dir, "foo")
     bar = os.path.join(tmp_dir, "bar")
@@ -84,6 +88,7 @@ def test_rmdir(sftp_client, tmp_dir):
     assert not os.path.isdir(target_dir)
 
 
+@not_windows
 def test_chmod(sftp_client, tmp_dir):
     test_file = os.path.join(tmp_dir, "foo")
     open(test_file, "w").write("X")
@@ -93,6 +98,7 @@ def test_chmod(sftp_client, tmp_dir):
     assert st.st_mode & check_bits == 0o600
 
 
+@not_windows
 def test_chown(sftp_client, tmp_dir):
     test_file = os.path.join(tmp_dir, "foo")
     open(test_file, "w").write("X")

@@ -1,14 +1,18 @@
 import codecs
 import platform
 import subprocess
+import sys
 import tempfile
 
 import paramiko
-from pytest import raises
+from pytest import mark, raises
 
 import mockssh
 
+not_windows = mark.skipif(sys.platform == 'win32', reason='Not supported on Windows')
 
+
+@not_windows
 def test_ssh_session(server):
     for uid in server.users:
         with server.client(uid) as c:
@@ -21,6 +25,7 @@ def test_ssh_session(server):
                     platform.node())
 
 
+@not_windows
 def test_ssh_failed_commands(server):
     for uid in server.users:
         with server.client(uid) as c:
@@ -30,22 +35,27 @@ def test_ssh_failed_commands(server):
                     stderr.startswith("rm: /: is a directory"))
 
 
+@not_windows
 def test_multiple_connections1(server):
     _test_multiple_connections(server)
 
 
+@not_windows
 def test_multiple_connections2(server):
     _test_multiple_connections(server)
 
 
+@not_windows
 def test_multiple_connections3(server):
     _test_multiple_connections(server)
 
 
+@not_windows
 def test_multiple_connections4(server):
     _test_multiple_connections(server)
 
 
+@not_windows
 def test_multiple_connections5(server):
     _test_multiple_connections(server)
 
@@ -68,6 +78,7 @@ def test_invalid_user(server):
     assert exc.value.args[0] == "unknown-user"
 
 
+@not_windows
 def test_add_user(server, user_key_path):
     with raises(KeyError):
         server.client("new-user")
